@@ -1,0 +1,22 @@
+name: 每日工作日通知
+
+on:
+  schedule:
+    # 每天周一到周五，北京时间上午 09:00 (UTC 01:00)
+    - cron: '0 1 * * 1-5'
+  workflow_dispatch: # 这一行非常重要，有了它你才能手动点击运行测试
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 发送钉钉消息
+        run: |
+          curl 'https://oapi.dingtalk.com/robot/send?access_token=82470dcefb9bfc31dd436847fe0410493ef443c2d911324cf3c86748275e0009' \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "msgtype": "text",
+            "text": {
+              "content": "hello"
+            }
+          }'
