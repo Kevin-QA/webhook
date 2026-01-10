@@ -2,8 +2,9 @@ name: 每日DCS维修值班通知
 
 on:
   schedule:
-    - cron: '30 0 * * *'
-  workflow_dispatch:
+    # 每天北京时间早上 09:00 推送 (对应 UTC 01:00)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # 方便随时点击按钮测试
 
 jobs:
   notify:
@@ -15,19 +16,19 @@ jobs:
       - name: 逻辑处理
         id: logic
         run: |
-          # 1. 设置基础日期信息
+          # 1. 设置日期信息
           TODAY=$(date -d "+8 hours" +%Y-%m-%d)
-          WEEKDAY=$(date -d "+8 hours" +%u) # 1-7, 6 是周六
+          WEEKDAY=$(date -d "+8 hours" +%u) # 6 是周六
           echo "DATE=$TODAY" >> $GITHUB_ENV
           
-          # 2. 提取值班人员 (修复乱码，使用换行符连接)
-          # grep 查找日期 -> cut 拿名字 -> tr 删除潜在回车符 -> 用 "\n- " 拼接成列表
+          # 2. 提取值班人员 (修复乱码并排版)
           NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr -d '\r' | sed 's/^/  - /')
           
           if [ -z "$NAMES" ]; then
             NAMES="  - 今日暂无排班记录"
           fi
-          # 处理换行转义，确保 curl 发送时能识别
+          
+          # 格式化换行符供 curl 使用
           NAMES_ESCAPED=$(echo "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
 
@@ -45,6 +46,6 @@ jobs:
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请相关同事准时到岗\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n(关键词: 提醒)"
+              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请相关同事准时到岗\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n(关键词: 提醒)"
             }
           }'
