@@ -34,7 +34,7 @@ jobs:
 
       - name: 发送钉钉通知
         run: |
-          curl '你的钉钉机器人URL' \
+          curl 'https://oapi.dingtalk.com/robot/send?access_token=82470dcefb9bfc31dd436847fe0410493ef443c2d911324cf3c86748275e0009' \
           -H 'Content-Type: application/json' \
           -d '{
             "msgtype": "text",
