@@ -46,6 +46,6 @@ jobs:
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请相关同事准时到岗\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n(关键词: 提醒)"
+              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请相关同事准时到岗\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n"
             }
           }'
