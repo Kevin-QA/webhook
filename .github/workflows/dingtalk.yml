@@ -2,9 +2,8 @@ name: 每日DCS维修值班通知
 
 on:
   schedule:
-    # 每天北京时间早上 08:30 (UTC 时间 00:30)
     - cron: '30 0 * * *'
-  workflow_dispatch: # 允许你手动点击按钮测试
+  workflow_dispatch:
 
 jobs:
   notify:
@@ -13,24 +12,31 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 提取今日所有值班人员
-        id: get_names
+      - name: 逻辑处理
+        id: logic
         run: |
-          # 获取北京时间今天的日期 (格式: 2026-01-10)
+          # 1. 设置基础日期信息
           TODAY=$(date -d "+8 hours" +%Y-%m-%d)
-          echo "搜索日期: $TODAY"
+          WEEKDAY=$(date -d "+8 hours" +%u) # 1-7, 6 是周六
+          echo "DATE=$TODAY" >> $GITHUB_ENV
           
-          # 1. 找到匹配日期的所有行
-          # 2. 提取第二列的名字
-          # 3. 将多个名字用 "、" 号拼接起来
-          NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr '\n' '、' | sed 's/、$//')
+          # 2. 提取值班人员 (修复乱码，使用换行符连接)
+          # grep 查找日期 -> cut 拿名字 -> tr 删除潜在回车符 -> 用 "\n- " 拼接成列表
+          NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr -d '\r' | sed 's/^/  - /')
           
           if [ -z "$NAMES" ]; then
-            NAMES="今日排班表无记录"
+            NAMES="  - 今日暂无排班记录"
           fi
-          
-          echo "今日值班: $NAMES"
-          echo "DUTY_NAMES=$NAMES" >> $GITHUB_ENV
+          # 处理换行转义，确保 curl 发送时能识别
+          NAMES_ESCAPED=$(echo "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
+          echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
+
+          # 3. 周六特别提醒逻辑
+          SAT_MSG=""
+          if [ "$WEEKDAY" -eq 6 ]; then
+            SAT_MSG="\\n⚠️ 【周六特别提醒】\\n今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
+          fi
+          echo "SATURDAY_MSG=$SAT_MSG" >> $GITHUB_ENV
 
       - name: 发送钉钉通知
         run: |
@@ -39,6 +45,6 @@ jobs:
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "【DCS维修值班提醒】\n今日日期：'$(date -d "+8 hours" +%Y-%m-%d)'\n值班人员：'"${{ env.DUTY_NAMES }}"'\n请相关同事准时到岗。 (关键词: 提醒)"
+              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请相关同事准时到岗\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n(关键词: 提醒)"
             }
           }'
