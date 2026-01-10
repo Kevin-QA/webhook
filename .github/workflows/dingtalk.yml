@@ -1,22 +1,44 @@
-name: 每日工作日通知
+name: 每日DCS维修值班通知
 
 on:
   schedule:
-    # 每天周一到周五，北京时间上午 09:00 (UTC 01:00)
-    - cron: '0 1 * * 1-5'
-  workflow_dispatch: # 这一行非常重要，有了它你才能手动点击运行测试
+    # 每天北京时间早上 08:30 (UTC 时间 00:30)
+    - cron: '30 0 * * *'
+  workflow_dispatch: # 允许你手动点击按钮测试
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: 发送钉钉消息
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 提取今日所有值班人员
+        id: get_names
         run: |
-          curl 'https://oapi.dingtalk.com/robot/send?access_token=82470dcefb9bfc31dd436847fe0410493ef443c2d911324cf3c86748275e0009' \
+          # 获取北京时间今天的日期 (格式: 2026-01-10)
+          TODAY=$(date -d "+8 hours" +%Y-%m-%d)
+          echo "搜索日期: $TODAY"
+          
+          # 1. 找到匹配日期的所有行
+          # 2. 提取第二列的名字
+          # 3. 将多个名字用 "、" 号拼接起来
+          NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr '\n' '、' | sed 's/、$//')
+          
+          if [ -z "$NAMES" ]; then
+            NAMES="今日排班表无记录"
+          fi
+          
+          echo "今日值班: $NAMES"
+          echo "DUTY_NAMES=$NAMES" >> $GITHUB_ENV
+
+      - name: 发送钉钉通知
+        run: |
+          curl '你的钉钉机器人URL' \
           -H 'Content-Type: application/json' \
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "hello"
+              "content": "【DCS维修值班提醒】\n今日日期：'$(date -d "+8 hours" +%Y-%m-%d)'\n值班人员：'"${{ env.DUTY_NAMES }}"'\n请相关同事准时到岗。 (关键词: 提醒)"
             }
           }'
