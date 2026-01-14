@@ -3,7 +3,7 @@ name: 每日DCS维修值班通知
 on:
   schedule:
     # 每天北京时间早上 09:00 推送 (对应 UTC 01:00)
-    - cron: '0 1 * * *'
+    - cron: '55 23 * * *'
   workflow_dispatch: # 方便随时点击按钮测试
 
 jobs:
