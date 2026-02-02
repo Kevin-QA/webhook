@@ -1,73 +1,73 @@
-date,name
-2026-02-01,Thu Jun Xiang
-2026-02-01,Chee Chung Li
-2026-02-01,Ong Yi Hang
-2026-02-02,Siaw Ze Yuan
-2026-02-02,Andrew Chiong Rui Bin
-2026-02-02,Chan Wei Fun
-2026-02-03,Siaw Ze Yuan
-2026-02-03,Andrew Chiong Rui Bin
-2026-02-03,Chan Wei Fun
-2026-02-04,Siaw Ze Yuan
-2026-02-04,Andrew Chiong Rui Bin
-2026-02-04,Chan Wei Fun
-2026-02-05,Thu Jun Xiang
-2026-02-05,Chee Chung Li
-2026-02-05,Ong Yi Hang
-2026-02-06,Thu Jun Xiang
-2026-02-06,Chee Chung Li
-2026-02-06,Ong Yi Hang
-2026-02-07,Siaw Ze Yuan
-2026-02-07,Andrew Chiong Rui Bin
-2026-02-07,Chan Wei Fun
-2026-02-08,Siaw Ze Yuan
-2026-02-08,Andrew Chiong Rui Bin
-2026-02-08,Chan Wei Fun
-2026-02-09,Thu Jun Xiang
-2026-02-09,Chee Chung Li
-2026-02-09,Ong Yi Hang
-2026-02-10,Thu Jun Xiang
-2026-02-10,Chee Chung Li
-2026-02-10,Ong Yi Hang
-2026-02-11,Thu Jun Xiang
-2026-02-11,Chee Chung Li
-2026-02-11,Ong Yi Hang
-2026-02-12,Siaw Ze Yuan
-2026-02-12,Andrew Chiong Rui Bin
-2026-02-12,Chan Wei Fun
-2026-02-13,Siaw Ze Yuan
-2026-02-13,Andrew Chiong Rui Bin
-2026-02-13,Chan Wei Fun
-2026-02-14,Thu Jun Xiang
-2026-02-14,Chee Chung Li
-2026-02-14,Ong Yi Hang
-2026-02-15,Thu Jun Xiang
-2026-02-15,Chee Chung Li
-2026-02-15,Ong Yi Hang
-2026-02-16,Siaw Ze Yuan
-2026-02-17,Thu Jun Xiang
-2026-02-18,Thu Jun Xiang
-2026-02-19,Chee Chung Li
-2026-02-19,Ong Yi Hang
-2026-02-20,Chee Chung Li
-2026-02-21,Andrew Chiong Rui Bin
-2026-02-21,Chan Wei Fun
-2026-02-22,Andrew Chiong Rui Bin
-2026-02-22,Chan Wei Fun
-2026-02-23,Thu Jun Xiang
-2026-02-23,Chee Chung Li
-2026-02-24,Thu Jun Xiang
-2026-02-24,Chee Chung Li
-2026-02-24,Ong Yi Hang
-2026-02-25,Thu Jun Xiang
-2026-02-25,Chee Chung Li
-2026-02-25,Ong Yi Hang
-2026-02-26,Siaw Ze Yuan
-2026-02-26,Andrew Chiong Rui Bin
-2026-02-26,Chan Wei Fun
-2026-02-27,Siaw Ze Yuan
-2026-02-27,Andrew Chiong Rui Bin
-2026-02-27,Chan Wei Fun
-2026-02-28,Thu Jun Xiang
-2026-02-28,Chee Chung Li
+date,name,public_holiday
+2026-02-01,Thu Jun Xiang,Thaipusam 休假
+2026-02-01,Chee Chung Li,Thaipusam 休假
+2026-02-01,Ong Yi Hang,Thaipusam 休假
+2026-02-02,Siaw Ze Yuan,
+2026-02-02,Andrew Chiong Rui Bin,
+2026-02-02,Chan Wei Fun,
+2026-02-03,Siaw Ze Yuan,
+2026-02-03,Andrew Chiong Rui Bin,
+2026-02-03,Chan Wei Fun,
+2026-02-04,Siaw Ze Yuan,
+2026-02-04,Andrew Chiong Rui Bin,
+2026-02-04,Chan Wei Fun,
+2026-02-05,Thu Jun Xiang,
+2026-02-05,Chee Chung Li,
+2026-02-05,Ong Yi Hang,
+2026-02-06,Thu Jun Xiang,
+2026-02-06,Chee Chung Li,
+2026-02-06,Ong Yi Hang,
+2026-02-07,Siaw Ze Yuan,
+2026-02-07,Andrew Chiong Rui Bin,
+2026-02-07,Chan Wei Fun,
+2026-02-08,Siaw Ze Yuan,
+2026-02-08,Andrew Chiong Rui Bin,
+2026-02-08,Chan Wei Fun,
+2026-02-09,Thu Jun Xiang,
+2026-02-09,Chee Chung Li,
+2026-02-09,Ong Yi Hang,
+2026-02-10,Thu Jun Xiang,
+2026-02-10,Chee Chung Li,
+2026-02-10,Ong Yi Hang,
+2026-02-11,Thu Jun Xiang,
+2026-02-11,Chee Chung Li,
+2026-02-11,Ong Yi Hang,
+2026-02-12,Siaw Ze Yuan,
+2026-02-12,Andrew Chiong Rui Bin,
+2026-02-12,Chan Wei Fun,
+2026-02-13,Siaw Ze Yuan,
+2026-02-13,Andrew Chiong Rui Bin,
+2026-02-13,Chan Wei Fun,
+2026-02-14,Thu Jun Xiang,
+2026-02-14,Chee Chung Li,
+2026-02-14,Ong Yi Hang,
+2026-02-15,Thu Jun Xiang,
+2026-02-15,Chee Chung Li,
+2026-02-15,Ong Yi Hang,
+2026-02-16,Siaw Ze Yuan,
+2026-02-17,Thu Jun Xiang,Chinese New Year 休假
+2026-02-18,Thu Jun Xiang,Chinese New Year Holiday 休假
+2026-02-19,Chee Chung Li,Awal Ramadan 休假
+2026-02-19,Ong Yi Hang,Awal Ramadan 休假
+2026-02-20,Chee Chung Li,
+2026-02-21,Andrew Chiong Rui Bin,
+2026-02-21,Chan Wei Fun,
+2026-02-22,Andrew Chiong Rui Bin,
+2026-02-22,Chan Wei Fun,
+2026-02-23,Thu Jun Xiang,
+2026-02-23,Chee Chung Li,
+2026-02-24,Thu Jun Xiang,
+2026-02-24,Chee Chung Li,
+2026-02-24,Ong Yi Hang,
+2026-02-25,Thu Jun Xiang,
+2026-02-25,Chee Chung Li,
+2026-02-25,Ong Yi Hang,
+2026-02-26,Siaw Ze Yuan,
+2026-02-26,Andrew Chiong Rui Bin,
+2026-02-26,Chan Wei Fun,
+2026-02-27,Siaw Ze Yuan,
+2026-02-27,Andrew Chiong Rui Bin,
+2026-02-27,Chan Wei Fun,
+2026-02-28,Thu Jun Xiang,
+2026-02-28,Chee Chung Li,
 2026-02-28,Ong Yi Hang
