@@ -2,7 +2,7 @@ name: 每日DCS维修值班通知
 
 on:
   schedule:
-    # 每天北京时间早上 09:00 推送 (对应 UTC 01:00)
+    # 每天北京时间早上 09:00 推送（UTC 01:00）
     - cron: '55 23 * * *'
   workflow_dispatch: # 方便随时点击按钮测试
 
@@ -14,25 +14,33 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 逻辑处理
-        id: logic
         run: |
-          # 1. 设置日期信息
+          # 1. 设置日期信息（北京时间）
           TODAY=$(date -d "+8 hours" +%Y-%m-%d)
-          WEEKDAY=$(date -d "+8 hours" +%u) # 6 是周六
+          WEEKDAY=$(date -d "+8 hours" +%u)
           echo "DATE=$TODAY" >> $GITHUB_ENV
-          
-          # 2. 提取值班人员 (修复乱码并排版)
+
+          # 2. 提取值班人员（原逻辑，保持不变）
           NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr -d '\r' | sed 's/^/  - /')
-          
+
+          # ——【最小新增 ①：取法定假期（第三列）】——
+          HOLIDAY=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f3 | head -n 1 | tr -d '\r')
+
           if [ -z "$NAMES" ]; then
             NAMES="  - 今日暂无排班记录"
           fi
-          
-          # 格式化换行符供 curl 使用
+
+          # ——【最小新增 ②：假期说明单独一行】——
+          if [ -n "$HOLIDAY" ]; then
+            NAMES="$NAMES
+（假期不上班）"
+          fi
+
+          # 3. 转义换行符供 curl 使用
           NAMES_ESCAPED=$(echo "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
 
-          # 3. 周六特别提醒逻辑
+          # 4. 周六特别提醒（原逻辑）
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 6 ]; then
             SAT_MSG="\\n⚠️ 【周六特别提醒】\\n今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
@@ -46,6 +54,6 @@ jobs:
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：'${{ env.DATE }}'\n👤 值班人员：\n'"${{ env.DUTY_NAMES }}"'\n\n📝 任务：\n- 请及时更新HardLink平台工单\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》'"${{ env.SATURDAY_MSG }}"'\n\n"
+              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 任务：\n- 请及时更新HardLink平台工单\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n"
             }
           }'
