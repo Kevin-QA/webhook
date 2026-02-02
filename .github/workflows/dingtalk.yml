@@ -4,7 +4,7 @@ on:
   schedule:
     # 每天北京时间早上 09:00 推送（UTC 01:00）
     - cron: '55 23 * * *'
-  workflow_dispatch: # 方便随时点击按钮测试
+  workflow_dispatch: 
 
 jobs:
   notify:
@@ -20,27 +20,27 @@ jobs:
           WEEKDAY=$(date -d "+8 hours" +%u)
           echo "DATE=$TODAY" >> $GITHUB_ENV
 
-          # 2. 提取值班人员（原逻辑，保持不变）
+          # 2. 提取值班人员
           NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr -d '\r' | sed 's/^/  - /')
 
-          # ——【最小新增 ①：取法定假期（第三列）】——
+          # 提取法定假期（第三列）
           HOLIDAY=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f3 | head -n 1 | tr -d '\r')
 
           if [ -z "$NAMES" ]; then
             NAMES="  - 今日暂无排班记录"
           fi
 
-          # ——【最小新增 ②：假期说明单独一行】——
+          # 修改点：使用 \n 替代手动换行，确保 Shell 脚本字符串拼接安全
           if [ -n "$HOLIDAY" ]; then
-            NAMES="$NAMES
-（假期不上班）"
+            NAMES="${NAMES}\n（假期不上班）"
           fi
 
-          # 3. 转义换行符供 curl 使用
-          NAMES_ESCAPED=$(echo "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
+          # 3. 转义处理
+          # 注意：这里的 sed 处理是为了让多行文本能安全存入 GITHUB_ENV
+          NAMES_ESCAPED=$(echo -e "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
 
-          # 4. 周六特别提醒（原逻辑）
+          # 4. 周六特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 6 ]; then
             SAT_MSG="\\n⚠️ 【周六特别提醒】\\n今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
