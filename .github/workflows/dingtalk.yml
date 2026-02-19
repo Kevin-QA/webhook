@@ -20,27 +20,30 @@ jobs:
           WEEKDAY=$(date -d "+8 hours" +%u)
           echo "DATE=$TODAY" >> $GITHUB_ENV
 
-          # 2. 提取值班人员
+          # 2. 提取数据
+          # 提取值班人员 (第2列)
           NAMES=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f2 | tr -d '\r' | sed 's/^/  - /')
-
-          # 提取法定假期（第三列）
-          HOLIDAY=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f3 | head -n 1 | tr -d '\r')
+          
+          # 提取法定假期 (第3列)
+          HOLIDAY_NAME=$(grep "^$TODAY" duty_roster.csv | cut -d',' -f3 | tr -d '\r')
 
           if [ -z "$NAMES" ]; then
             NAMES="  - 今日暂无排班记录"
           fi
 
-          # 修改点：使用 \n 替代手动换行，确保 Shell 脚本字符串拼接安全
-          if [ -n "$HOLIDAY" ]; then
-            NAMES="${NAMES}\n（假期不上班）"
+          # 3. 处理假期提醒逻辑
+          HOLIDAY_MSG=""
+          if [ -n "$HOLIDAY_NAME" ]; then
+            # 如果有假期名称，则显示名称并提醒不上班
+            HOLIDAY_MSG="\\n🎉 今日节日：$HOLIDAY_NAME\\n
           fi
+          echo "HOLIDAY_DISPLAY=$HOLIDAY_MSG" >> $GITHUB_ENV
 
-          # 3. 转义处理
-          # 注意：这里的 sed 处理是为了让多行文本能安全存入 GITHUB_ENV
+          # 4. 转义处理人员名单
           NAMES_ESCAPED=$(echo -e "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
           echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
 
-          # 4. 周六特别提醒
+          # 5. 周六特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 6 ]; then
             SAT_MSG="\\n⚠️ 【周六特别提醒】\\n今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
@@ -54,6 +57,6 @@ jobs:
           -d '{
             "msgtype": "text",
             "text": {
-              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 任务：\n- 请及时更新HardLink平台工单\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n"
+              "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}${{ env.HOLIDAY_DISPLAY }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 任务：\n- 请及时更新HardLink平台工单\n- 值班组长请及时飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n"
             }
           }'
