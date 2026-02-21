@@ -38,9 +38,7 @@ jobs:
           # 假期消息
           HOLIDAY_MSG=""
           if [ -n "$HOLIDAY_NAME" ]; then
-            HOLIDAY_MSG="
-🎉 今日节日：$HOLIDAY_NAME
-提醒：法定假期不上班哦~"
+            HOLIDAY_MSG="🎉 今日节日：$HOLIDAY_NAME提醒：法定假期不上班哦~"
           fi
 
           # 用多行 delimiter 写入（关键修复）
@@ -56,9 +54,7 @@ jobs:
           # 周六特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 6 ]; then
-            SAT_MSG="
-⚠️ 【周六特别提醒】
-今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
+            SAT_MSG="⚠️ 【周六特别提醒】今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
           fi
 
           echo "SATURDAY_MSG<<SAT_EOF" >> $GITHUB_ENV
