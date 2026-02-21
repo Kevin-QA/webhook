@@ -4,13 +4,13 @@ on:
   schedule:
     # 北京时间每天早上 09:00（UTC 01:00），建议用 5 分避开高峰
     - cron: '5 1 * * *'
-  workflow_dispatch:  # 支持手动触发测试
+  workflow_dispatch: # 支持手动触发测试
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     env:
-      TZ: Asia/Shanghai  # 设置 runner 时区为北京时间（推荐）
+      TZ: Asia/Shanghai # 设置 runner 时区为北京时间（推荐）
 
     steps:
       - name: 检出代码
@@ -18,39 +18,52 @@ jobs:
 
       - name: 逻辑处理
         run: |
-          # 获取北京时间（runner 已设 TZ=Asia/Shanghai）
+          # 获取北京时间
           TODAY=$(date +%Y-%m-%d)
           WEEKDAY=$(date +%u)   # 1=周一 ... 7=周日，6=周六
 
           echo "DATE=$TODAY" >> $GITHUB_ENV
 
-          # 提取值班人员 (假设 csv 格式: 日期,人员名单,假期名称)
-          # 用 awk 更安全，避免 grep 多行或格式问题
-          NAMES=$(awk -F',' -v date="$TODAY" '$1 == date {print $2}' duty_roster.csv | tr -d '\r' | sed 's/^/ - /; s/,/\n - /g')
-          HOLIDAY_NAME=$(awk -F',' -v date="$TODAY" '$1 == date {print $3}' duty_roster.csv | tr -d '\r')
+          # 提取值班人员（去重 + 排序可选，避免重复名字）
+          NAMES_RAW=$(awk -F',' -v date="$TODAY" '$1 == date {print $2}' duty_roster.csv \
+                       | tr -d '\r' | sort -u | sed 's/^/ - /')
 
-          # 无排班处理
-          if [ -z "$NAMES" ]; then
-            NAMES=" - 今日暂无排班记录"
+          if [ -z "$NAMES_RAW" ]; then
+            NAMES_RAW=" - 今日暂无排班记录"
           fi
+
+          # 提取假期（只取第一个非空值，避免多行重复）
+          HOLIDAY_NAME=$(awk -F',' -v date="$TODAY" '$1 == date && $3 != "" {print $3; exit}' duty_roster.csv | tr -d '\r')
 
           # 假期消息
           HOLIDAY_MSG=""
           if [ -n "$HOLIDAY_NAME" ]; then
-            HOLIDAY_MSG=$'\n🎉 今日节日：'"$HOLIDAY_NAME"$'\n提醒：法定假期不上班哦~'
+            HOLIDAY_MSG="
+🎉 今日节日：$HOLIDAY_NAME
+提醒：法定假期不上班哦~"
           fi
-          echo "HOLIDAY_DISPLAY=$HOLIDAY_MSG" >> $GITHUB_ENV
 
-          # 转义名单为钉钉兼容（多行用 \\n）
-          NAMES_ESCAPED=$(echo "$NAMES" | sed ':a;N;$!ba;s/\n/\\n/g')
-          echo "DUTY_NAMES=$NAMES_ESCAPED" >> $GITHUB_ENV
+          # 用多行 delimiter 写入（关键修复）
+          echo "HOLIDAY_DISPLAY<<HOLIDAY_EOF" >> $GITHUB_ENV
+          echo "$HOLIDAY_MSG" >> $GITHUB_ENV
+          echo "HOLIDAY_EOF" >> $GITHUB_ENV
+
+          # 值班人员名单（直接多行写入，保留换行）
+          echo "DUTY_NAMES<<NAMES_EOF" >> $GITHUB_ENV
+          echo "$NAMES_RAW" >> $GITHUB_ENV
+          echo "NAMES_EOF" >> $GITHUB_ENV
 
           # 周六特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 6 ]; then
-            SAT_MSG=$'\n⚠️ 【周六特别提醒】\n今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！'
+            SAT_MSG="
+⚠️ 【周六特别提醒】
+今天是周六，请曼棋、文杰、达幸、刘友、均祥记得及时填写周报！"
           fi
-          echo "SATURDAY_MSG=$SAT_MSG" >> $GITHUB_ENV
+
+          echo "SATURDAY_MSG<<SAT_EOF" >> $GITHUB_ENV
+          echo "$SAT_MSG" >> $GITHUB_ENV
+          echo "SAT_EOF" >> $GITHUB_ENV
 
       - name: 发送钉钉通知
         run: |
@@ -59,6 +72,6 @@ jobs:
             -d '{
               "msgtype": "text",
               "text": {
-                "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}${{ env.HOLIDAY_DISPLAY }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 今日任务：\n- 请及时更新 HardLink 平台工单\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n\n如有疑问请联系管理员~"
+                "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}${{ env.HOLIDAY_DISPLAY }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 今日任务：\n- 请及时更新 HardLink 平台工单\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n\n如有疑问请联系刘友~"
               }
             }'
