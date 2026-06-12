@@ -1,4 +1,4 @@
-date,name,public_holiday
+date,name,public_holiday,remark
 2026-05-27,Andrew Chiong Rui Bin,马来西亚：哈芝节 / 古尔邦节（联邦/全国）
 2026-05-28,Chee Chung Li,
 2026-05-28,Ong Yi Hang,
@@ -18,7 +18,7 @@ date,name,public_holiday
 2026-06-06,Ong Yi Hang,
 2026-06-07,Chee Chung Li,
 2026-06-07,Ong Yi Hang,
-2026-06-08,Andrew Chiong Rui Bin,
+2026-06-08,Andrew Chiong Rui Bin,,
 2026-06-09,Andrew Chiong Rui Bin,
 2026-06-10,Andrew Chiong Rui Bin,
 2026-06-11,Chee Chung Li,
@@ -27,7 +27,7 @@ date,name,public_holiday
 2026-06-12,Ong Yi Hang,
 2026-06-13,Andrew Chiong Rui Bin,
 2026-06-14,Andrew Chiong Rui Bin,
-2026-06-15,Chee Chung Li,
+2026-06-15,,,Chee Chung Li请假
 2026-06-15,Ong Yi Hang,
 2026-06-16,Chee Chung Li,
 2026-06-16,Ong Yi Hang,
