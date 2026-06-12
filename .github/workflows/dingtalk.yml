@@ -20,25 +20,41 @@ jobs:
         run: |
           # 获取北京时间
           TODAY=$(date +%Y-%m-%d)
-          WEEKDAY=$(date +%u)   # 1=周一 ... 7=周日，6=周六
+          WEEKDAY=$(date +%u)   # 1=周一 ... 7=周日
 
           echo "DATE=$TODAY" >> $GITHUB_ENV
 
-          # 提取值班人员（去重 + 排序可选，避免重复名字）
-          NAMES_RAW=$(awk -F',' -v date="$TODAY" '$1 == date {print $2}' duty_roster.csv \
-                       | tr -d '\r' | sort -u | sed 's/^/ - /')
+          # 提取值班人员与备注（第2列是名字，第4列是备注）
+          # 如果有备注，则显示为 " - 名字 (备注: XXX)"；没有则只显示 " - 名字"
+          NAMES_RAW=$(awk -F',' -v date="$TODAY" '
+            $1 == date {
+              name = $2;
+              remark = $4;
+              # 去除可能存在的 Windows 换行符 \r
+              gsub(/\r/, "", name);
+              gsub(/\r/, "", remark);
+              
+              if (name != "") {
+                if (remark != "") {
+                  print " - " name " (备注: " remark ")"
+                } else {
+                  print " - " name
+                }
+              }
+            }
+          ' duty_roster.csv | sort -u)
 
           if [ -z "$NAMES_RAW" ]; then
             NAMES_RAW=" - 今日暂无排班记录"
           fi
 
-          # 提取假期（只取第一个非空值，避免多行重复）
+          # 提取假期（第3列，只取第一个非空值）
           HOLIDAY_NAME=$(awk -F',' -v date="$TODAY" '$1 == date && $3 != "" {print $3; exit}' duty_roster.csv | tr -d '\r')
 
           # 假期消息
           HOLIDAY_MSG=""
           if [ -n "$HOLIDAY_NAME" ]; then
-            HOLIDAY_MSG="🎉 今日马来西亚节日：$HOLIDAY_NAME"
+            HOLIDAY_MSG="\n🎉 今日马来西亚节日：$HOLIDAY_NAME"
           fi
 
           # 用多行 delimiter 写入（关键修复）
@@ -54,7 +70,7 @@ jobs:
           # 周四特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 4 ]; then
-            SAT_MSG="⚠️ 【周四特别提醒】今天是周四，请曼棋、文杰、达幸、刘友、均祥、崧沥记得及时填写周报！"
+            SAT_MSG="\n\n⚠️ 【周四特别提醒】今天是周四，请曼棋、文杰、达幸、刘友、均祥、崧沥记得及时填写周报！"
           fi
 
           echo "SATURDAY_MSG<<SAT_EOF" >> $GITHUB_ENV
