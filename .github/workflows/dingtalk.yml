@@ -24,31 +24,15 @@ jobs:
 
           echo "DATE=$TODAY" >> $GITHUB_ENV
 
-          # 提取值班人员与备注（第2列是名字，第4列是备注）
-          # 如果有备注，则显示为 " - 名字 (备注: XXX)"；没有则只显示 " - 名字"
-          NAMES_RAW=$(awk -F',' -v date="$TODAY" '
-            $1 == date {
-              name = $2;
-              remark = $4;
-              # 去除可能存在的 Windows 换行符 \r
-              gsub(/\r/, "", name);
-              gsub(/\r/, "", remark);
-              
-              if (name != "") {
-                if (remark != "") {
-                  print " - " name " (备注: " remark ")"
-                } else {
-                  print " - " name
-                }
-              }
-            }
-          ' duty_roster.csv | sort -u)
+          # 1. 提取值班人员（去重 + 过滤空值）
+          NAMES_RAW=$(awk -F',' -v date="$TODAY" '$1 == date && $2 != "" {print $2}' duty_roster.csv \
+                        | tr -d '\r' | sort -u | sed 's/^/ - /')
 
           if [ -z "$NAMES_RAW" ]; then
             NAMES_RAW=" - 今日暂无排班记录"
           fi
 
-          # 提取假期（第3列，只取第一个非空值）
+          # 2. 提取假期（第3列，只取第一个非空值）
           HOLIDAY_NAME=$(awk -F',' -v date="$TODAY" '$1 == date && $3 != "" {print $3; exit}' duty_roster.csv | tr -d '\r')
 
           # 假期消息
@@ -57,21 +41,34 @@ jobs:
             HOLIDAY_MSG="\n🎉 今日马来西亚节日：$HOLIDAY_NAME"
           fi
 
-          # 用多行 delimiter 写入（关键修复）
-          echo "HOLIDAY_DISPLAY<<HOLIDAY_EOF" >> $GITHUB_ENV
-          echo "$HOLIDAY_MSG" >> $GITHUB_ENV
-          echo "HOLIDAY_EOF" >> $GITHUB_ENV
+          # 3. 提取人员备注（第4列，汇总当天所有的非空备注）
+          REMARK_RAW=$(awk -F',' -v date="$TODAY" '$1 == date && $4 != "" {print $4}' duty_roster.csv \
+                        | tr -d '\r' | sort -u | sed 's/^/ - /')
 
-          # 值班人员名单（直接多行写入，保留换行）
-          echo "DUTY_NAMES<<NAMES_EOF" >> $GITHUB_ENV
-          echo "$NAMES_RAW" >> $GITHUB_ENV
-          echo "NAMES_EOF" >> $GITHUB_ENV
+          # 人员提醒消息
+          REMARK_MSG=""
+          if [ -n "$REMARK_RAW" ]; then
+            REMARK_MSG="\n🔔 人员特别提醒：\n$REMARK_RAW"
+          fi
 
-          # 周四特别提醒
+          # 4. 周四特别提醒
           SAT_MSG=""
           if [ "$WEEKDAY" -eq 4 ]; then
             SAT_MSG="\n\n⚠️ 【周四特别提醒】今天是周四，请曼棋、文杰、达幸、刘友、均祥、崧沥记得及时填写周报！"
           fi
+
+          # --- 写入 GitHub 环境变量（多行处理） ---
+          echo "HOLIDAY_DISPLAY<<HOLIDAY_EOF" >> $GITHUB_ENV
+          echo "$HOLIDAY_MSG" >> $GITHUB_ENV
+          echo "HOLIDAY_EOF" >> $GITHUB_ENV
+
+          echo "DUTY_NAMES<<NAMES_EOF" >> $GITHUB_ENV
+          echo "$NAMES_RAW" >> $GITHUB_ENV
+          echo "NAMES_EOF" >> $GITHUB_ENV
+
+          echo "REMARK_DISPLAY<<REMARK_EOF" >> $GITHUB_ENV
+          echo "$REMARK_MSG" >> $GITHUB_ENV
+          echo "REMARK_EOF" >> $GITHUB_ENV
 
           echo "SATURDAY_MSG<<SAT_EOF" >> $GITHUB_ENV
           echo "$SAT_MSG" >> $GITHUB_ENV
@@ -84,6 +81,6 @@ jobs:
             -d '{
               "msgtype": "text",
               "text": {
-                "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}${{ env.HOLIDAY_DISPLAY }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}\n\n📝 今日任务：\n- 请及时更新 HardLink 平台工单\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n\n如有疑问请联系刘友~"
+                "content": "📅 DCS 维修值班提醒\n--------------------------\n🗓 日期：${{ env.DATE }}${{ env.HOLIDAY_DISPLAY }}\n👤 值班人员：\n${{ env.DUTY_NAMES }}${{ env.REMARK_DISPLAY }}\n\n📝 今日任务：\n- 请及时更新 HardLink 平台工单\n- 值班组长请及时在飞书填写《金华-DCS 维修记录表》${{ env.SATURDAY_MSG }}\n\n如有疑问请联系刘友~"
               }
             }'
